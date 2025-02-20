@@ -1,8 +1,10 @@
 import sys
+from time import sleep
 
 import pygame 
 
 from settings import Settings
+from game_stats import GameStats
 from ship import Ship
 from bullet import Bullet
 from alien_1 import Alien
@@ -21,6 +23,9 @@ class AlienInvasion:
         self.screen = pygame.display.set_mode((1200, 800))
         pygame.display.set_caption("Alien Invasion")
         
+        # Create an instance to store game statistics.
+        self.stats = GameStats(self)
+        
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
@@ -29,12 +34,15 @@ class AlienInvasion:
         self._create_fleet()
         self._create_star_field()
         
+        # Start Alien Invasion in an active state.
+        
     def run_game(self):
         """ Start the main loop for the game. """
         while True:
             self._check_events()
             self.ship.update()
-            self._update_bullets()       
+            self._update_bullets()
+            self._update_aliens()       
             self._update_screen()
             self.clock.tick(60)
             
@@ -81,7 +89,47 @@ class AlienInvasion:
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
-        print(len(self.bullets))
+        
+        self._check_bullet_alien_collision()
+            
+    def _check_bullet_alien_collision(self):
+        """ Respond to bullet-alien collisions """
+        # Remove any bullets and aliens that have collided
+        collisions = pygame.sprite.groupcollide(
+                 self.bullets, self.aliens, False, True) # If no longer wanting a bullet that deletes anything in path, change first boolean arg to 'True' to delete bullet)
+        
+        if not self.aliens:
+            # Destroying existing bullets and create new fleet.
+            self.bullets.empty()
+            self._create_fleet()
+            
+    def _ship_hit(self):
+        """ Respond to the ship being hit by an alien. """
+        # Decrement ships_left.
+        self.stats.ships_left -= 1
+        
+        # Get rid of any remaining bullets or aliens.
+        self.bullets.empty()
+        self.aliens.empty()
+        
+        # Create a new fleet and center the ship.
+        self._create_fleet()
+        self.ship.center_ship()
+        
+        # Pause.
+        sleep(0.5)         
+            
+    def _update_aliens(self):
+        """ Check if the fleet is at an edge, then update positions. """
+        self._check_fleet_edges()
+        self.aliens.update()  
+        
+        # Look for alien-ship collisions. 
+        if pygame.sprite.spritecollideany(self.ship, self.aliens):
+            self._ship_hit()
+            
+        # Look for aliens hitting the bottom of the screen.
+        self._check_aliens_bottom()      
     
     def _create_fleet(self):
         """ Create the fleet of aliens. """
@@ -113,13 +161,33 @@ class AlienInvasion:
         new_alien.rect.y = y_position
         self.aliens.add(new_alien)
         
+    def _check_fleet_edges(self):
+        """ Respond appropriately if any aliens have reached an edge. """
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+            
+    def _change_fleet_direction(self):
+        """ Drop entire fleet and change direction. """
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1   
+        
+    def _check_aliens_bottom(self):
+        """ Check if aliens have reached the bottom of the screen. """
+        for alien in self.alien.sprites():
+            if alien.rect.bottom >= self.settings.screen_height:
+                # Treat this the same as if the ship was hit.
+                self._ship_hit()
+                break                 
+        
     def _create_star_field(self):
         """ Create a field of randomly positioned stars. """
         for _ in range(250):  
            star = Star(self)
            self.stars.add(star)
-    
-                               
+                           
     def _update_screen(self):
         """ Update images on the screen and flip to the new screen. """
         self.screen.fill(self.settings.bg_color)
