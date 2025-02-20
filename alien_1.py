@@ -1,23 +1,23 @@
 import pygame
+from pygame.sprite import Sprite
 
-class Alien:
-    """ A class to manage the Alien. """
+class Alien(Sprite):
+    """ A class to represent a single Alien in the fleet. """
     
     def __init__(self, ai_game):
-        """ Initialize Alien and get its starting position. """
+        """ Initialize the Alien and set its starting position. """
+        super().__init__()
         self.screen = ai_game.screen
-        self.screen_rect = ai_game.screen.get_rect()
         
-        # Load the Alien and get its rect.
-        self.image = pygame.image.load('images/alien_invasion_alien1.bmp')
+        # Load the alien image and set its rect attribute
+        self.image = pygame.image.load('images/alien2.png')
         self.rect = self.image.get_rect()
         
-        # Start each new Alien at the Middle Top of the screen.
-        self.rect.midtop = self.screen_rect.midtop
+        # Start each new Alien at the top left of the screen.
+        self.rect.x = self.rect.width
+        self.rect.y = self.rect.height
         
-    def blitme(self):
-        """ Draw the alien at its current location. """
-        self.screen.blit(self.image, self.rect)
-            
+        # Store the alien's exact horizontal position.
+        self.x = float(self.rect.x)  
         
         
