@@ -26,8 +26,7 @@ class Ship:
         
     def update(self):
         """ Update the ship's position based on the moving flag. """
-        print(f"Before Update: -x: {self.x}. rect.x: {self.rect.x}, moving_right: {self.moving_right}, moving_left: {self.moving_left}")
-        
+     
         # Update the ship's x value, not the rect.
         if self.moving_right:
             self.x += self.settings.ship_speed
