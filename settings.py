@@ -48,6 +48,9 @@ class Settings:
         # fleet_direction of 1 represents right; -1 represents left.
         self.fleet_direction = 1
         
+        # Scoring settings.
+        self.alien_points = 50
+        
     def set_difficulty(self, difficulty):
         """ Set game difficulty and reinitialize dynamic settings. """
         self.difficulty = difficulty
