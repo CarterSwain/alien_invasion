@@ -72,6 +72,8 @@ class AlienInvasion:
         # Reset the game statistics
         self.stats.reset_stats()
         self.sb.prep_score()
+        self.sb.prep_high_score()
+        self.sb.prep_level()
         self.game_active = True 
             
         # Get rid of any remaining bullets and aliens.
@@ -147,7 +149,10 @@ class AlienInvasion:
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.game_active:
             # Reset the game settings.
-            self._start_game()      
+            self._start_game()
+            
+            self.sb.prep_score()
+            self.sb.prep_level()     
             
             
     def _fire_bullet(self):
@@ -168,7 +173,7 @@ class AlienInvasion:
                 self.bullets.remove(bullet)
         
         self._check_bullet_alien_collision()
-            
+             
             
     def _check_bullet_alien_collision(self):
         """ Respond to bullet-alien collisions """
@@ -179,12 +184,17 @@ class AlienInvasion:
             for aliens in collisions.values():
                 self.stats.score += self.settings.alien_points * len(aliens)
             self.sb.prep_score()
+            self.sb.check_high_score() # TO DO: ARE THESE IN RIGHT PLACE?
             
         if not self.aliens:
             # Destroying existing bullets and create new fleet.
             self.bullets.empty()
             self._create_fleet()
             self.settings.increase_speed()
+            
+            # Increase level.
+            self.stats.level += 1
+            self.sb.prep_level()
             
             
     def _ship_hit(self):
