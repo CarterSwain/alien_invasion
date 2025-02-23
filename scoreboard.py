@@ -1,5 +1,7 @@
 import pygame
 from pygame.sprite import Group
+from pathlib import Path
+import json
 from ship import Ship
 
 class Scoreboard:
@@ -75,7 +77,28 @@ class Scoreboard:
         """ Check to see if there is a new high score. """
         if self.stats.score > self.stats.high_score:
             self.stats.high_score = self.stats.score
-            self.prep_high_score()       
+            self.prep_high_score()
+            
+            
+    def save_high_score(self):
+        """ Write high score to JSON file to be saved when player quits the game. """
+        high_score = self.stats.high_score
+        path = Path('high_score.json')
+        contents = json.dumps(high_score)
+        path.write_text(contents)
+                           
+     
+    def read_high_score(self):
+        """ IF there is a high score, read high score that was previously saved. """
+        path = Path('high_score.json')
+        if path.exists():
+            try:
+                contents = path.read_text()
+                high_score = json.loads(contents)
+                return high_score if isinstance(high_score, int) else 0
+            except (json.JSONDecodeError, ValueError):
+                return 0
+        return 0
         
         
     def show_score(self): 

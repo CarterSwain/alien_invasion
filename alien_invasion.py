@@ -30,6 +30,10 @@ class AlienInvasion:
         self.stats = GameStats(self)
         self.sb = Scoreboard(self)
         
+        # Load the high score from the saved file
+        self.stats.high_score = self.sb.read_high_score()
+        self.sb.prep_high_score()
+        
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
@@ -76,6 +80,10 @@ class AlienInvasion:
         self.sb.prep_level()
         self.game_active = True 
             
+        # Load the high score from the saved file
+        self.stats.high_score = self.sb.read_high_score()
+        self.sb.prep_high_score()    
+            
         # Get rid of any remaining bullets and aliens.
         self.bullets.empty()
         self.aliens.empty()
@@ -92,6 +100,7 @@ class AlienInvasion:
         """ Respond to key presses and mouse events. """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                self.sb.save_high_score()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
@@ -128,6 +137,7 @@ class AlienInvasion:
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
+            self.sb.save_high_score()
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
