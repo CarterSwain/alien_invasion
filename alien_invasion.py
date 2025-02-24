@@ -18,12 +18,23 @@ class AlienInvasion:
     def __init__(self):
         """ Initialize game, and create game resources. """
         pygame.init()
+        pygame.mixer.init() # Initialize mixer module for sound effects & background music.
         
         self.clock = pygame.time.Clock()
         self.settings = Settings()
         
         self.screen = pygame.display.set_mode((1200, 800))
         pygame.display.set_caption("Alien Invasion")
+        
+        # Load Sounds Effects
+        self.bullet_sound = pygame.mixer.Sound('sounds/alien_invasion_bullet_sound.wav')
+        self.ship_hit_sound = pygame.mixer.Sound('sounds/alien_invasion_ship_hit.wav')
+        
+        # Load Background Music
+        pygame.mixer.music.load('sounds/alien_invasion_theme.wav')
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1) # Play music indefinitely.
+        
         
         # Create an instance to store game statistics,
         # and create a scoreboard.
@@ -101,6 +112,7 @@ class AlienInvasion:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.sb.save_high_score()
+                pygame.mixer.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
@@ -170,7 +182,8 @@ class AlienInvasion:
         """ Create a new bullet and add it to the bullets group. """
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
-            self.bullets.add(new_bullet)         
+            self.bullets.add(new_bullet)
+            self.bullet_sound.play()         
      
     
     def _update_bullets(self):
@@ -194,6 +207,7 @@ class AlienInvasion:
         if collisions:
             for aliens in collisions.values():
                 self.stats.score += self.settings.alien_points * len(aliens)
+                
             self.sb.prep_score()
             self.sb.check_high_score() # TO DO: ARE THESE IN RIGHT PLACE?
             
@@ -210,6 +224,8 @@ class AlienInvasion:
             
     def _ship_hit(self):
         """ Respond to the ship being hit by an alien. """
+        self.ship_hit_sound.play()
+        
         if self.stats.ships_left > 0:
             # Decrement ships_left, and update scoreboard.
             self.stats.ships_left -= 1
